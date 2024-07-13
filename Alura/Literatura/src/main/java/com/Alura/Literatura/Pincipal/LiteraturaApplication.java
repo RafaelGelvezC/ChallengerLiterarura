@@ -1,6 +1,9 @@
 package com.Alura.Literatura.Pincipal;
 
 import com.Alura.Literatura.modelo.Libros;
+import com.Alura.Literatura.modelo.Autor;
+import com.Alura.Literatura.repository.AutorRepository;
+import com.Alura.Literatura.repository.LibroRepository;
 import com.Alura.Literatura.service.ConsumoAPI;
 import com.Alura.Literatura.service.ConvierteDatos;
 import com.Alura.Literatura.modelo.DatosLibros;
@@ -8,6 +11,7 @@ import org.springframework.boot.CommandLineRunner;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 
+import java.util.List;
 import java.util.Scanner;
 
 @SpringBootApplication(scanBasePackages = {"com.Alura.Literatura"})
@@ -16,6 +20,8 @@ public class LiteraturaApplication implements CommandLineRunner {
 	private final ConsumoAPI consumoAPI;
 	private final ConvierteDatos convierteDatos;
 	private final Scanner scanner;
+	private final AutorRepository autorRepository = new AutorRepository();
+	private final LibroRepository libroRepository = new LibroRepository();
 
 	public LiteraturaApplication(ConsumoAPI consumoAPI, ConvierteDatos convierteDatos) {
 		this.consumoAPI = consumoAPI;
@@ -38,7 +44,9 @@ public class LiteraturaApplication implements CommandLineRunner {
 			System.out.println("### Menú Principal ###");
 			System.out.println("1. Consultar libros");
 			System.out.println("2. Buscar libro por título");
-			System.out.println("3. Salir");
+			System.out.println("3. Listar autores");
+			System.out.println("4. Listar autores vivos en determinado año");
+			System.out.println("5. Salir");
 			System.out.println("Ingrese el número de opción deseada: ");
 
 			int opcion = scanner.nextInt();
@@ -52,6 +60,12 @@ public class LiteraturaApplication implements CommandLineRunner {
 					buscarLibroPorTitulo();
 					break;
 				case 3:
+					listarAutores();
+					break;
+				case 4:
+					listarAutoresVivosEnAnio();
+					break;
+				case 5:
 					System.out.println("Saliendo de la aplicación...");
 					continuar = false;
 					break;
@@ -67,6 +81,7 @@ public class LiteraturaApplication implements CommandLineRunner {
 			String jsonResponse = consumoAPI.obtenerDatos(url);
 			DatosLibros datosLibros = convierteDatos.convertirDesdeJson(jsonResponse, DatosLibros.class);
 
+			guardarLibrosYAutores(datosLibros);
 			mostrarInformacionLibros(datosLibros);
 		} catch (Exception e) {
 			System.out.println("Error al consultar los libros desde la API: " + e.getMessage());
@@ -85,12 +100,43 @@ public class LiteraturaApplication implements CommandLineRunner {
 			if (datosLibros.getResults().isEmpty()) {
 				System.out.println("No se encontraron libros con ese título.");
 			} else {
+				guardarLibrosYAutores(datosLibros);
 				mostrarInformacionLibro(datosLibros.getResults().get(0));
 			}
 		} catch (Exception e) {
 			System.out.println("Error al buscar el libro por título: " + e.getMessage());
 			e.printStackTrace();  // Depuración
 		}
+	}
+
+	private void listarAutores() {
+		List<Autor> autores = autorRepository.listar();
+		if (autores.isEmpty()) {
+			System.out.println("No se han encontrado autores.");
+		} else {
+			autores.forEach(autor -> System.out.println(autor));
+		}
+	}
+
+	private void listarAutoresVivosEnAnio() {
+		System.out.println("Ingrese el año: ");
+		int anio = scanner.nextInt();
+		scanner.nextLine();
+		List<Autor> autoresVivos = autorRepository.listarVivosEnAnio(anio);
+		if (autoresVivos.isEmpty()) {
+			System.out.println("No se encontraron autores vivos en el año " + anio);
+		} else {
+			autoresVivos.forEach(autor -> System.out.println(autor));
+		}
+	}
+
+	private void guardarLibrosYAutores(DatosLibros datosLibros) {
+		datosLibros.getResults().forEach(libro -> {
+			libroRepository.guardar(libro);
+			if (!libro.getAutores().isEmpty()) {
+				autorRepository.guardar(libro.getAutores().get(0));
+			}
+		});
 	}
 
 	private void mostrarInformacionLibros(DatosLibros datosLibros) {
