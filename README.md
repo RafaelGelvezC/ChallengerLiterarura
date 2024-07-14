@@ -96,6 +96,6 @@ Al ejecutar la aplicación, se mostrará el siguiente menú:
 
 Para cualquier consulta o sugerencia, por favor contacta a:
 
-- **Nombre del Desarrollador**: Rafel Gelvez
+- **Nombre del Desarrollador**: Rafael Gelvez
 - **Email**: rafael.gelvezc@hotmail.com
 - **GitHub**: [RafaelGelvezC](https://github.com/RafaelGelvezC)
