@@ -1,27 +1,41 @@
 package com.Alura.Literatura.modelo;
 
-import com.fasterxml.jackson.annotation.JsonAlias;
-import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import jakarta.persistence.*;
 
-import java.util.List;
-import java.util.Map;
-
-@JsonIgnoreProperties(ignoreUnknown = true)
+@Entity
+@Table(name = "libros")
 public class Libros {
-    private int id;
-    private String titulo;
-    private List<Autor> autores;
-    private List<String> categoria;
-    private List<String> idiomas;
-    private Map<String, String> formato;
-    private int downloadCount;
 
-    // Getters y Setters
-    public int getId() {
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Long id;
+
+    @Column(unique = true)
+    private String titulo;
+
+    @Enumerated(EnumType.STRING)
+    private Idioma idioma;
+
+    private double numeroDescargas;
+
+    @ManyToOne(fetch = FetchType.EAGER)
+    private Autor autor;
+
+    public Libros() {}
+
+    public Libros(DatosLibros datosLibros) {
+        this.titulo = datosLibros.titulo();
+        this.idioma = Idioma.fromString(datosLibros.idiomas().get(0));
+        this.numeroDescargas = datosLibros.numeroDescargas();
+    }
+
+    // Getters y setters
+
+    public Long getId() {
         return id;
     }
 
-    public void setId(int id) {
+    public void setId(Long id) {
         this.id = id;
     }
 
@@ -29,66 +43,44 @@ public class Libros {
         return titulo;
     }
 
-    @JsonAlias("title")
     public void setTitulo(String titulo) {
         this.titulo = titulo;
     }
 
-    public List<Autor> getAutores() {
-        return autores;
+    public Idioma getIdioma() {
+        return idioma;
     }
 
-    @JsonAlias("authors")
-    public void setAutores(List<Autor> autores) {
-        this.autores = autores;
+    public void setIdioma(Idioma idioma) {
+        this.idioma = idioma;
     }
 
-    public List<String> getCategoria() {
-        return categoria;
+    public double getNumeroDescargas() {
+        return numeroDescargas;
     }
 
-    @JsonAlias("subjects")
-    public void setCategoria(List<String> categoria) {
-        this.categoria = categoria;
+    public void setNumeroDescargas(double numeroDescargas) {
+        this.numeroDescargas = numeroDescargas;
     }
 
-    public List<String> getIdiomas() {
-        return idiomas;
+    public Autor getAutor() {
+        return autor;
     }
 
-    @JsonAlias("languages")
-    public void setIdiomas(List<String> idiomas) {
-        this.idiomas = idiomas;
-    }
-
-    public Map<String, String> getFormato() {
-        return formato;
-    }
-
-    @JsonAlias("formats")
-    public void setFormato(Map<String, String> formato) {
-        this.formato = formato;
-    }
-
-    public int getDownloadCount() {
-        return downloadCount;
-    }
-
-    @JsonAlias("download_count")
-    public void setDownloadCount(int downloadCount) {
-        this.downloadCount = downloadCount;
+    public void setAutor(Autor autor) {
+        this.autor = autor;
     }
 
     @Override
     public String toString() {
-        return "Libros{" +
-                "id=" + id +
-                ", titulo='" + titulo + '\'' +
-                ", autores=" + autores +
-                ", categoria=" + categoria +
-                ", idiomas=" + idiomas +
-                ", formato=" + formato +
-                ", downloadCount=" + downloadCount +
-                '}';
+        StringBuilder sb = new StringBuilder();
+        sb.append("Id: ").append(id).append("\n")
+                .append("Libro: ").append(titulo).append("\n")
+                .append("Idioma: ").append(idioma).append("\n")
+                .append("Numero de Descargas: ").append(numeroDescargas).append("\n")
+                .append("Autor: ").append(autor.getNombre()).append("\n")
+                .append("Fecha de nacimiento: ").append(autor.getAnoNacimiento()).append("\n")
+                .append("Fecha de muerte: ").append(autor.getAnoMuerte());
+        return sb.toString();
     }
 }

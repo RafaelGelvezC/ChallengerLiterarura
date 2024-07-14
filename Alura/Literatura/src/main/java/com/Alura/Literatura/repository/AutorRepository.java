@@ -1,24 +1,18 @@
 package com.Alura.Literatura.repository;
 
 import com.Alura.Literatura.modelo.Autor;
-import java.util.ArrayList;
+import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
+import org.springframework.stereotype.Repository;
+
 import java.util.List;
-import java.util.stream.Collectors;
+import java.util.Optional;
 
-public class AutorRepository {
-    private final List<Autor> autores = new ArrayList<>();
+@Repository
+public interface AutorRepository extends JpaRepository<Autor, Long> {
+    Optional<Autor> findByNombreIgnoreCase(String nombre);
 
-    public void guardar(Autor autor) {
-        autores.add(autor);
-    }
-
-    public List<Autor> listar() {
-        return new ArrayList<>(autores);
-    }
-
-    public List<Autor> listarVivosEnAnio(int anio) {
-        return autores.stream()
-                .filter(autor -> (autor.getAnoNacimiento() <= anio) && (autor.getAnoMuerte() == 0 || autor.getAnoMuerte() >= anio))
-                .collect(Collectors.toList());
-    }
+    @Query("SELECT a FROM Autor a WHERE a.anoNacimiento <= :ano AND (a.anoMuerte IS NULL OR a.anoMuerte >= :ano)")
+    List<Autor> findAutoresVivosEnAno(@Param("ano") Integer ano);
 }
